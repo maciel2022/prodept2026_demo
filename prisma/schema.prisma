@@ -1,0 +1,156 @@
+// Prisma schema for PRODEPT 2026 — World Cup prediction game
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────────
+// Enums
+// ─────────────────────────────────────────────
+
+enum MatchStage {
+  GROUP
+  ROUND_OF_32
+  ROUND_OF_16
+  QUARTER
+  SEMI
+  THIRD_PLACE
+  FINAL
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+}
+
+// ─────────────────────────────────────────────
+// Models
+// ─────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  emailVerified DateTime?
+  password      String?
+  image         String?
+  isAdmin       Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  accounts     Account[]
+  sessions     Session[]
+  predictions  Prediction[]
+  leagues      LeagueMember[]
+  ownedLeagues League[]     @relation("LeagueOwner")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Team {
+  id        String  @id @default(cuid())
+  name      String
+  code      String  @unique
+  group     String
+  flagUrl   String  @default("")
+
+  homeMatches Match[] @relation("HomeTeam")
+  awayMatches Match[] @relation("AwayTeam")
+}
+
+model Match {
+  id         String      @id @default(cuid())
+  homeTeamId String
+  awayTeamId String
+  homeScore     Int?
+  awayScore     Int?
+  penaltyWinner String?
+  matchDate     DateTime
+  stage         MatchStage
+  group         String?
+  venue         String
+  status        MatchStatus @default(SCHEDULED)
+
+  homeTeam    Team         @relation("HomeTeam", fields: [homeTeamId], references: [id])
+  awayTeam    Team         @relation("AwayTeam", fields: [awayTeamId], references: [id])
+  predictions Prediction[]
+}
+
+model Prediction {
+  id        String   @id @default(cuid())
+  userId    String
+  matchId   String
+  homeScore     Int
+  awayScore     Int
+  penaltyWinner String?
+  points        Int      @default(0)
+  createdAt     DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  match Match @relation(fields: [matchId], references: [id])
+
+  @@unique([userId, matchId])
+}
+
+model League {
+  id        String   @id @default(cuid())
+  name      String
+  code      String   @unique
+  isGlobal  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  ownerId   String
+
+  owner   User           @relation("LeagueOwner", fields: [ownerId], references: [id])
+  members LeagueMember[]
+}
+
+model LeagueMember {
+  id       String   @id @default(cuid())
+  leagueId String
+  userId   String
+  joinedAt DateTime @default(now())
+
+  league League @relation(fields: [leagueId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+
+  @@unique([leagueId, userId])
+}
