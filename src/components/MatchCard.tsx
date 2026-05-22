@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { SoccerBall } from "@phosphor-icons/react/dist/ssr";
-import { formatMatchDate } from "@/lib/format";
+import { formatMatchDate, formatStageLabel } from "@/lib/format";
 import CountryFlag from "@/components/CountryFlag";
 
 type Team = {
@@ -62,8 +62,7 @@ export default function MatchCard({
   prediction,
 }: Props) {
   const isFinished = status === "FINISHED";
-  const formattedStage = stage.replace(/_/g, " ");
-  const stageLabel = group ? `${formattedStage} — ${group}` : formattedStage;
+  const stageLabel = formatStageLabel(stage, group);
 
   return (
     <article className="glass-card p-4 md:p-6 flex flex-col gap-3 md:gap-4">

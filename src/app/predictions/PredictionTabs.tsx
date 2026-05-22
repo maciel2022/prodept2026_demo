@@ -1,7 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { SoccerBall, ClockCounterClockwise } from "@phosphor-icons/react/dist/ssr";
+import { SoccerBall, ClockCounterClockwise } from "@phosphor-icons/react";
+
+type TabKey = "upcoming" | "history";
+
+const TABS: { key: TabKey; label: string; icon: typeof SoccerBall }[] = [
+  { key: "upcoming", label: "UPCOMING", icon: SoccerBall },
+  { key: "history", label: "MY HISTORY", icon: ClockCounterClockwise },
+];
 
 type Props = {
   upcomingCount: number;
@@ -16,50 +23,46 @@ export default function PredictionTabs({
   upcoming,
   history,
 }: Props) {
-  const [tab, setTab] = useState<"upcoming" | "history">("upcoming");
+  const [tab, setTab] = useState<TabKey>("upcoming");
+  const counts: Record<TabKey, number> = { upcoming: upcomingCount, history: historyCount };
 
   return (
     <div className="space-y-6">
-      {/* Tab switcher */}
       <div
         className="flex rounded-xl p-1 gap-1"
         style={{ background: "var(--color-surface-container)" }}
         role="tablist"
       >
-        <button
-          role="tab"
-          aria-selected={tab === "upcoming"}
-          onClick={() => setTab("upcoming")}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg label-bold tracking-widest text-xs transition-all cursor-pointer"
-          style={{
-            background: tab === "upcoming"
-              ? "linear-gradient(135deg, var(--color-primary-fixed-dim), var(--color-secondary-container))"
-              : "transparent",
-            color: tab === "upcoming" ? "#fff" : "var(--color-on-surface-variant)",
-          }}
-        >
-          <SoccerBall size={16} weight={tab === "upcoming" ? "fill" : "regular"} />
-          UPCOMING ({upcomingCount})
-        </button>
-        <button
-          role="tab"
-          aria-selected={tab === "history"}
-          onClick={() => setTab("history")}
-          className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg label-bold tracking-widest text-xs transition-all cursor-pointer"
-          style={{
-            background: tab === "history"
-              ? "linear-gradient(135deg, var(--color-primary-fixed-dim), var(--color-secondary-container))"
-              : "transparent",
-            color: tab === "history" ? "#fff" : "var(--color-on-surface-variant)",
-          }}
-        >
-          <ClockCounterClockwise size={16} weight={tab === "history" ? "fill" : "regular"} />
-          MY HISTORY ({historyCount})
-        </button>
+        {TABS.map(({ key, label, icon: Icon }) => {
+          const isActive = tab === key;
+          return (
+            <button
+              key={key}
+              role="tab"
+              id={`tab-${key}`}
+              aria-selected={isActive}
+              aria-controls={`panel-${key}`}
+              onClick={() => setTab(key)}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-lg label-bold tracking-widest text-xs transition-all cursor-pointer"
+              style={{
+                background: isActive
+                  ? "linear-gradient(135deg, var(--color-primary-fixed-dim), var(--color-secondary-container))"
+                  : "transparent",
+                color: isActive ? "var(--color-on-primary-fixed)" : "var(--color-on-surface-variant)",
+              }}
+            >
+              <Icon size={16} weight={isActive ? "fill" : "regular"} />
+              {label} ({counts[key]})
+            </button>
+          );
+        })}
       </div>
 
-      {/* Tab content */}
-      <div role="tabpanel">
+      <div
+        role="tabpanel"
+        id={`panel-${tab}`}
+        aria-labelledby={`tab-${tab}`}
+      >
         {tab === "upcoming" ? upcoming : history}
       </div>
     </div>

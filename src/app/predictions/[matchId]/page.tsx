@@ -4,7 +4,7 @@ import Image from "next/image";
 import { ArrowLeft, Lock, PencilSimple } from "@phosphor-icons/react/dist/ssr";
 
 import { auth } from "@/auth";
-import { formatMatchDate } from "@/lib/format";
+import { formatMatchDate, formatStageLabel } from "@/lib/format";
 import { prisma } from "@/lib/prisma";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
@@ -54,10 +54,7 @@ export default async function PredictionMatchPage({ params }: Props) {
   if (!match) notFound();
 
   const isClosed = match.status === "FINISHED" || match.status === "LIVE";
-  const formattedStage = match.stage.replace(/_/g, " ");
-  const stageLabel = match.group
-    ? `${formattedStage} — ${match.group}`
-    : formattedStage;
+  const stageLabel = formatStageLabel(match.stage, match.group);
 
   return (
     <>

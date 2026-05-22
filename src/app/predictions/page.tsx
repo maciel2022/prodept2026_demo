@@ -10,7 +10,7 @@ import {
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { formatMatchDate } from "@/lib/format";
+import { formatMatchDate, formatStageLabel } from "@/lib/format";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
 import MatchCard from "@/components/MatchCard";
@@ -21,12 +21,11 @@ import PredictionTabs from "./PredictionTabs";
 export const metadata = { title: "Predictions — PRODEPT 2026" };
 
 function getPointsLabel(points: number): string {
-  if (points === 5) return "Exact score";
   if (points === 7) return "Exact + winner bonus";
-  if (points === 4) return "Result + difference";
   if (points === 6) return "Result + diff + winner";
+  if (points === 5) return "Exact score / Result + winner";
+  if (points === 4) return "Result + difference";
   if (points === 3) return "Correct result";
-  if (points === 5) return "Result + winner bonus";
   if (points === 2) return "Winner bonus";
   if (points === 1) return "Correct difference";
   return "Wrong";
@@ -135,13 +134,10 @@ export default async function PredictionsPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           {finishedMatches.map((match) => {
             const pred = predictionMap.get(match.id);
-            const formattedStage = match.stage.replace(/_/g, " ");
-            const stageLabel = match.group
-              ? `${formattedStage} — ${match.group}`
-              : formattedStage;
+            const stageLabel = formatStageLabel(match.stage, match.group);
 
             return (
               <div key={match.id} className="glass-card p-4 space-y-3">

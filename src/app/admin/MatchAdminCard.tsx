@@ -39,10 +39,9 @@ export default function MatchAdminCard({ match }: Props) {
   const isFormDraw = formHomeScore !== "" && formAwayScore !== "" && formHomeScore === formAwayScore;
   const showPenaltyPicker = isKnockout && isFormDraw;
 
-  const formattedStage = match.stage.replace(/_/g, " ");
   const stageLabel = match.group
-    ? `${formattedStage} — ${match.group}`
-    : formattedStage;
+    ? `${match.stage.replace(/_/g, " ")} — ${match.group}`
+    : match.stage.replace(/_/g, " ");
 
   const date = new Date(match.matchDate);
   const dateStr = date.toLocaleDateString("en-US", {

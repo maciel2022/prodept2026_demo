@@ -19,3 +19,8 @@ const longFormatter = new Intl.DateTimeFormat("en-US", {
 export function formatMatchDate(date: Date, style: "short" | "long" = "short"): string {
   return style === "long" ? longFormatter.format(date) : shortFormatter.format(date);
 }
+
+export function formatStageLabel(stage: string, group?: string | null): string {
+  const formatted = stage.replace(/_/g, " ");
+  return group ? `${formatted} — ${group}` : formatted;
+}
