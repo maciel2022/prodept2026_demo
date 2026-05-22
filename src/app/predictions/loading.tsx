@@ -17,8 +17,11 @@ export default function PredictionsLoading() {
         <Skeleton className="h-4 w-48" />
       </div>
 
-      {/* Section label */}
-      <Skeleton className="h-3 w-36" />
+      {/* Tab switcher skeleton */}
+      <div className="flex rounded-xl p-1 gap-1" style={{ background: "var(--color-surface-container)" }}>
+        <Skeleton className="flex-1 h-10 rounded-lg" />
+        <Skeleton className="flex-1 h-10 rounded-lg" />
+      </div>
 
       {/* Match cards grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
