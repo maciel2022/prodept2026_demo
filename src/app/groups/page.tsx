@@ -28,7 +28,7 @@ export default async function GroupsPage({ searchParams }: Props) {
   const selectedGroup = (groupParam ?? "A").toUpperCase();
   const selectedStage = stageParam ?? "ROUND_OF_32";
 
-  const [user, teams, knockoutMatches] = await Promise.all([
+  const [user, teams, groupMatches, knockoutMatches] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: { id: true, name: true, email: true, image: true, isAdmin: true },
@@ -37,6 +37,12 @@ export default async function GroupsPage({ searchParams }: Props) {
       ? prisma.team.findMany({
           where: { group: selectedGroup },
           orderBy: { name: "asc" },
+        })
+      : Promise.resolve([]),
+    phase === "groups"
+      ? prisma.match.findMany({
+          where: { stage: "GROUP", group: selectedGroup, status: "FINISHED" },
+          select: { homeTeamId: true, awayTeamId: true, homeScore: true, awayScore: true },
         })
       : Promise.resolve([]),
     phase === "knockouts"
@@ -52,6 +58,41 @@ export default async function GroupsPage({ searchParams }: Props) {
   ]);
 
   if (!user) redirect("/login");
+
+  // Calculate group standings from finished matches
+  type Standing = { mp: number; w: number; d: number; l: number; gf: number; ga: number; gd: number; pts: number };
+  const standingsMap = new Map<string, Standing>();
+
+  for (const team of teams) {
+    standingsMap.set(team.id, { mp: 0, w: 0, d: 0, l: 0, gf: 0, ga: 0, gd: 0, pts: 0 });
+  }
+
+  for (const m of groupMatches) {
+    if (m.homeScore == null || m.awayScore == null) continue;
+    const home = standingsMap.get(m.homeTeamId);
+    const away = standingsMap.get(m.awayTeamId);
+    if (home) {
+      home.mp++; home.gf += m.homeScore; home.ga += m.awayScore;
+      if (m.homeScore > m.awayScore) { home.w++; home.pts += 3; }
+      else if (m.homeScore === m.awayScore) { home.d++; home.pts += 1; }
+      else { home.l++; }
+      home.gd = home.gf - home.ga;
+    }
+    if (away) {
+      away.mp++; away.gf += m.awayScore; away.ga += m.homeScore;
+      if (m.awayScore > m.homeScore) { away.w++; away.pts += 3; }
+      else if (m.awayScore === m.homeScore) { away.d++; away.pts += 1; }
+      else { away.l++; }
+      away.gd = away.gf - away.ga;
+    }
+  }
+
+  // Sort teams by PTS desc → GD desc → GF desc
+  const sortedTeams = [...teams].sort((a, b) => {
+    const sa = standingsMap.get(a.id)!;
+    const sb = standingsMap.get(b.id)!;
+    return sb.pts - sa.pts || sb.gd - sa.gd || sb.gf - sa.gf;
+  });
 
   const groupColor = GROUP_COLORS[selectedGroup] ?? { bg: "#36ffc4", text: "#000" };
   const stageData = KNOCKOUT_STAGES.find((s) => s.key === selectedStage);
@@ -199,15 +240,16 @@ export default async function GroupsPage({ searchParams }: Props) {
                     </tr>
                   </thead>
                   <tbody>
-                    {teams.length === 0 ? (
+                    {sortedTeams.length === 0 ? (
                       <tr>
                         <td colSpan={9} className="text-center py-6 md:py-8 text-on-surface-variant text-xs md:text-sm">
                           No teams in Group {selectedGroup} yet.
                         </td>
                       </tr>
                     ) : (
-                      teams.map((team, index) => {
+                      sortedTeams.map((team, index) => {
                         const isQualified = index < 2;
+                        const s = standingsMap.get(team.id)!;
                         return (
                           <tr
                             key={team.id}
@@ -235,7 +277,7 @@ export default async function GroupsPage({ searchParams }: Props) {
                               </div>
                             </td>
                             {/* MP, W, D, L, GF, GA, GD */}
-                            {[0, 0, 0, 0, 0, 0, 0].map((val, i) => (
+                            {[s.mp, s.w, s.d, s.l, s.gf, s.ga, s.gd].map((val, i) => (
                               <td key={i} className="py-3 md:py-5 px-1 md:px-4 lg:px-5 text-center text-on-surface-variant tabular-nums text-[0.65rem] md:text-base lg:text-lg">
                                 {val}
                               </td>
@@ -249,7 +291,7 @@ export default async function GroupsPage({ searchParams }: Props) {
                                   color: isQualified ? groupColor.bg : "var(--color-on-surface-variant)",
                                 }}
                               >
-                                0
+                                {s.pts}
                               </span>
                             </td>
                           </tr>
