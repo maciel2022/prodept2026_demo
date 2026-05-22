@@ -392,42 +392,205 @@ async function main() {
   }
   console.log(`  ✓ ${knockoutCount} knockout matches created.`);
 
-  // 5. Demo users
-  console.log("\n[5/6] Creating demo users...");
-  const demoPassword = await bcrypt.hash("demo123", 12);
-  const adminPassword = await bcrypt.hash("admin123", 12);
+  // 5. Users (16 total)
+  console.log("\n[5/8] Creating 16 users...");
+  const pw = await bcrypt.hash("demo123", 12);
 
-  const demoUser = await prisma.user.upsert({
-    where: { email: "demo@prodept.com" },
-    update: {},
-    create: { name: "Demo User", email: "demo@prodept.com", password: demoPassword },
+  const USERS_DATA = [
+    { name: "Demo User",          email: "demo@prodept.com" },
+    { name: "Admin PRODEPT",      email: "admin@prodept.com",      isAdmin: true },
+    { name: "Maciel Fernandez",   email: "maciel@deptagency.com" },
+    { name: "Sofia Martinez",     email: "sofia@deptagency.com" },
+    { name: "Lucas Thompson",     email: "lucas@deptagency.com" },
+    { name: "Ana Rodriguez",      email: "ana@deptagency.com" },
+    { name: "James Wilson",       email: "james@deptagency.com" },
+    { name: "Valentina Cruz",     email: "valentina@deptagency.com" },
+    { name: "Diego Morales",      email: "diego@deptagency.com" },
+    { name: "Emma Chen",          email: "emma@deptagency.com" },
+    { name: "Carlos Ruiz",        email: "carlos@deptagency.com" },
+    { name: "Olivia Park",        email: "olivia@deptagency.com" },
+    { name: "Rafael Silva",       email: "rafael@deptagency.com" },
+    { name: "Mia Johnson",        email: "mia@deptagency.com" },
+    { name: "Tomas Herrera",      email: "tomas@deptagency.com" },
+    { name: "Aisha Patel",        email: "aisha@deptagency.com" },
+  ];
+
+  const users: Record<string, string> = {}; // email -> id
+  for (const u of USERS_DATA) {
+    const user = await prisma.user.upsert({
+      where: { email: u.email },
+      update: { isAdmin: (u as { isAdmin?: boolean }).isAdmin ?? false },
+      create: { name: u.name, email: u.email, password: pw, isAdmin: (u as { isAdmin?: boolean }).isAdmin ?? false },
+    });
+    users[u.email] = user.id;
+  }
+  const allUserIds = Object.values(users);
+  console.log(`  ✓ ${USERS_DATA.length} users ready.`);
+
+  // 6. Leagues (1 global + 5 private)
+  console.log("\n[6/8] Creating leagues...");
+  const LEAGUES_DATA = [
+    { name: "PRODEPT Main League", code: "PRODEPT2026", isGlobal: true, ownerEmail: "admin@prodept.com", memberEmails: USERS_DATA.map(u => u.email) },
+    { name: "The Office Champions", code: "CHAMPS", isGlobal: false, ownerEmail: "maciel@deptagency.com", memberEmails: ["maciel@deptagency.com", "sofia@deptagency.com", "lucas@deptagency.com", "ana@deptagency.com", "diego@deptagency.com", "emma@deptagency.com"] },
+    { name: "Marketing Legends", code: "MKTLEG", isGlobal: false, ownerEmail: "sofia@deptagency.com", memberEmails: ["sofia@deptagency.com", "james@deptagency.com", "valentina@deptagency.com", "olivia@deptagency.com", "mia@deptagency.com", "aisha@deptagency.com"] },
+    { name: "Dev Team Prode", code: "DEVTM3", isGlobal: false, ownerEmail: "james@deptagency.com", memberEmails: ["maciel@deptagency.com", "ana@deptagency.com", "james@deptagency.com", "carlos@deptagency.com", "tomas@deptagency.com", "rafael@deptagency.com"] },
+    { name: "Buenos Aires FC", code: "BAIRES", isGlobal: false, ownerEmail: "diego@deptagency.com", memberEmails: ["diego@deptagency.com", "carlos@deptagency.com", "rafael@deptagency.com", "tomas@deptagency.com", "maciel@deptagency.com", "demo@prodept.com"] },
+    { name: "World Cup Nerds", code: "WCNERD", isGlobal: false, ownerEmail: "emma@deptagency.com", memberEmails: ["emma@deptagency.com", "olivia@deptagency.com", "aisha@deptagency.com", "valentina@deptagency.com", "ana@deptagency.com", "sofia@deptagency.com"] },
+  ];
+
+  for (const l of LEAGUES_DATA) {
+    const league = await prisma.league.upsert({
+      where: { code: l.code },
+      update: { name: l.name },
+      create: { name: l.name, code: l.code, isGlobal: l.isGlobal, ownerId: users[l.ownerEmail] },
+    });
+    for (const email of l.memberEmails) {
+      await prisma.leagueMember.upsert({
+        where: { leagueId_userId: { leagueId: league.id, userId: users[email] } },
+        update: {},
+        create: { leagueId: league.id, userId: users[email] },
+      });
+    }
+  }
+  console.log(`  ✓ ${LEAGUES_DATA.length} leagues ready.`);
+
+  // 7. Update match results for Groups A-D (24 matches FINISHED) + Group E md1 LIVE
+  console.log("\n[7/8] Setting match results (Groups A-D finished, E live)...");
+
+  // Fetch all group matches sorted by date
+  const allGroupMatches = await prisma.match.findMany({
+    where: { stage: "GROUP" },
+    orderBy: { matchDate: "asc" },
+    include: { homeTeam: true, awayTeam: true },
   });
 
-  const adminUser = await prisma.user.upsert({
-    where: { email: "admin@prodept.com" },
-    update: { isAdmin: true },
-    create: { name: "Admin PRODEPT", email: "admin@prodept.com", password: adminPassword, isAdmin: true },
-  });
-  console.log("  ✓ demo@prodept.com / admin@prodept.com ready.");
+  // Groups A-D = first 24 matches (6 per group × 4 groups)
+  const FAKE_RESULTS: [number, number][] = [
+    // Group A (MEX, RSA, KOR, CZE)
+    [2, 1], [1, 1], [0, 2], [3, 0], [1, 1], [2, 0],
+    // Group B (CAN, BIH, QAT, SUI)
+    [1, 0], [0, 3], [1, 1], [2, 1], [0, 1], [1, 2],
+    // Group C (BRA, MAR, HAI, SCO)
+    [2, 2], [0, 1], [1, 0], [4, 0], [1, 2], [3, 1],
+    // Group D (USA, PAR, AUS, TUR)
+    [3, 1], [1, 1], [2, 0], [0, 0], [1, 2], [2, 1],
+  ];
 
-  // 6. Global league
-  console.log("\n[6/6] Creating global league...");
-  const globalLeague = await prisma.league.upsert({
-    where: { code: "PRODEPT2026" },
-    update: { name: "PRODEPT Main League" },
-    create: { name: "PRODEPT Main League", code: "PRODEPT2026", isGlobal: true, ownerId: adminUser.id },
-  });
-
-  for (const user of [adminUser, demoUser]) {
-    await prisma.leagueMember.upsert({
-      where: { leagueId_userId: { leagueId: globalLeague.id, userId: user.id } },
-      update: {},
-      create: { leagueId: globalLeague.id, userId: user.id },
+  // Set finished results + move dates to past
+  for (let i = 0; i < 24 && i < allGroupMatches.length; i++) {
+    const m = allGroupMatches[i];
+    const pastDate = new Date("2026-05-14T12:00:00Z");
+    pastDate.setDate(pastDate.getDate() + Math.floor(i / 2)); // spread over ~12 days
+    await prisma.match.update({
+      where: { id: m.id },
+      data: {
+        homeScore: FAKE_RESULTS[i][0],
+        awayScore: FAKE_RESULTS[i][1],
+        status: "FINISHED",
+        matchDate: pastDate,
+      },
     });
   }
-  console.log(`  ✓ League "${globalLeague.name}" ready.`);
 
-  console.log(`\n✓ Seed complete! ${groupCount + knockoutCount} total matches.`);
+  // Group E matchday 1 = matches 24,25 → set LIVE
+  for (let i = 24; i < 26 && i < allGroupMatches.length; i++) {
+    await prisma.match.update({
+      where: { id: allGroupMatches[i].id },
+      data: { status: "LIVE" },
+    });
+  }
+  console.log("  ✓ 24 matches FINISHED, 2 LIVE.");
+
+  // 8. Create predictions for all users
+  console.log("\n[8/8] Creating predictions...");
+
+  // Helper: calculate points
+  function calcPoints(pH: number, pA: number, aH: number, aA: number): number {
+    if (pH === aH && pA === aA) return 5;
+    let pts = 0;
+    if (Math.sign(pH - pA) === Math.sign(aH - aA)) pts += 3;
+    if ((pH - pA) === (aH - aA)) pts += 1;
+    return pts;
+  }
+
+  // Prediction patterns per user tier
+  // offset: how far off from actual result (0 = exact, 1 = close, 2 = random)
+  type Tier = { emails: string[]; coverage: number; accuracy: "high" | "medium" | "low" };
+  const TIERS: Tier[] = [
+    { emails: ["ana@deptagency.com", "diego@deptagency.com"], coverage: 1.0, accuracy: "high" },
+    { emails: ["sofia@deptagency.com", "tomas@deptagency.com", "aisha@deptagency.com"], coverage: 1.0, accuracy: "high" },
+    { emails: ["maciel@deptagency.com", "james@deptagency.com", "emma@deptagency.com"], coverage: 1.0, accuracy: "medium" },
+    { emails: ["carlos@deptagency.com", "rafael@deptagency.com", "olivia@deptagency.com"], coverage: 0.85, accuracy: "low" },
+    { emails: ["lucas@deptagency.com", "demo@prodept.com", "admin@prodept.com"], coverage: 0.6, accuracy: "medium" },
+    { emails: ["valentina@deptagency.com", "mia@deptagency.com"], coverage: 0.25, accuracy: "low" },
+  ];
+
+  // Deterministic "random" based on index
+  function pseudoRandom(seed: number): number {
+    return ((seed * 9301 + 49297) % 233280) / 233280;
+  }
+
+  let predCount = 0;
+  const finishedMatches = allGroupMatches.slice(0, 24);
+
+  for (const tier of TIERS) {
+    for (const email of tier.emails) {
+      const userId = users[email];
+      for (let i = 0; i < finishedMatches.length; i++) {
+        // Skip some matches based on coverage
+        const r = pseudoRandom(i * 100 + email.length * 7);
+        if (r > tier.coverage) continue;
+
+        const m = finishedMatches[i];
+        const actualH = FAKE_RESULTS[i][0];
+        const actualA = FAKE_RESULTS[i][1];
+
+        let predH: number, predA: number;
+        const r2 = pseudoRandom(i * 31 + email.length * 13 + 7);
+
+        if (tier.accuracy === "high") {
+          if (r2 < 0.3) { predH = actualH; predA = actualA; } // exact
+          else if (r2 < 0.7) { predH = actualH; predA = actualA + (r2 < 0.5 ? 1 : -1); predA = Math.max(0, predA); } // close
+          else { predH = Math.max(0, actualH + (r2 < 0.85 ? 1 : -1)); predA = actualA; }
+        } else if (tier.accuracy === "medium") {
+          if (r2 < 0.15) { predH = actualH; predA = actualA; }
+          else if (r2 < 0.5) { predH = Math.max(0, actualH + 1); predA = actualA; }
+          else { predH = Math.round(r2 * 3); predA = Math.round((1 - r2) * 2); }
+        } else {
+          predH = Math.round(r2 * 4);
+          predA = Math.round((1 - r2) * 3);
+        }
+
+        const points = calcPoints(predH, predA, actualH, actualA);
+        await prisma.prediction.upsert({
+          where: { userId_matchId: { userId, matchId: m.id } },
+          update: { homeScore: predH, awayScore: predA, points },
+          create: { userId, matchId: m.id, homeScore: predH, awayScore: predA, points },
+        });
+        predCount++;
+      }
+
+      // Add some future predictions (for SCHEDULED matches) for top/high tiers
+      if (tier.accuracy === "high" || tier.accuracy === "medium") {
+        const futureCount = tier.accuracy === "high" ? 6 : 2;
+        const scheduledMatches = allGroupMatches.filter(m => m.status === "SCHEDULED").slice(0, futureCount);
+        for (const m of scheduledMatches) {
+          const r3 = pseudoRandom(m.id.length + email.length);
+          const predH = Math.round(r3 * 3);
+          const predA = Math.round((1 - r3) * 2);
+          await prisma.prediction.upsert({
+            where: { userId_matchId: { userId, matchId: m.id } },
+            update: { homeScore: predH, awayScore: predA },
+            create: { userId, matchId: m.id, homeScore: predH, awayScore: predA },
+          });
+          predCount++;
+        }
+      }
+    }
+  }
+  console.log(`  ✓ ${predCount} predictions created.`);
+
+  console.log(`\n✓ Dev seed complete! ${groupCount + knockoutCount} matches, ${USERS_DATA.length} users, ${LEAGUES_DATA.length} leagues.`);
 }
 
 main()
