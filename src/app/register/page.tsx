@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/auth";
 import { getTranslations } from "next-intl/server";
+import LocaleToggle from "@/components/LocaleToggle";
 import RegisterForm from "./RegisterForm";
 
 export const metadata = { title: "Create Account — PRODEPT 2026" };
@@ -21,6 +22,11 @@ export default async function RegisterPage() {
       </div>
 
       <div className="glass-panel w-full max-w-md px-6 py-8 sm:px-8 sm:py-10 flex flex-col gap-6 relative z-10">
+        {/* Locale toggle */}
+        <div className="absolute top-4 right-4">
+          <LocaleToggle />
+        </div>
+
         <div className="flex items-center justify-center gap-4">
           <Image src="/logos/DEPT.png" alt="DEPT" width={48} height={48} className="h-10 w-auto brightness-0 invert" />
           <span className="text-outline-variant text-2xl font-thin select-none" aria-hidden="true">&times;</span>
