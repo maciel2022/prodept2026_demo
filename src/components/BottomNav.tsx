@@ -3,30 +3,32 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { House, ChartBar, SoccerBall, UsersThree, Trophy } from "@phosphor-icons/react/dist/ssr";
+import { useTranslations } from "next-intl";
 
 type NavItem = {
-  label: string;
+  labelKey: string;
   icon: typeof House;
   href: string;
 };
 
 const NAV_ITEMS: NavItem[] = [
-  { label: "Home",    icon: House,       href: "/" },
-  { label: "Groups",  icon: ChartBar,    href: "/groups" },
-  { label: "Predict", icon: SoccerBall,  href: "/predictions" },
-  { label: "Rank",    icon: Trophy,      href: "/leaderboard" },
-  { label: "Leagues", icon: UsersThree,  href: "/leagues" },
+  { labelKey: "home",    icon: House,       href: "/" },
+  { labelKey: "groups",  icon: ChartBar,    href: "/groups" },
+  { labelKey: "predict", icon: SoccerBall,  href: "/predictions" },
+  { labelKey: "rank",    icon: Trophy,      href: "/leaderboard" },
+  { labelKey: "leagues", icon: UsersThree,  href: "/leagues" },
 ];
 
 export default function BottomNav() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
 
   return (
     <nav
       className="fixed bottom-0 inset-x-0 z-50 glass-panel rounded-none border-t border-[color-mix(in_srgb,var(--color-outline-variant)_40%,transparent)] flex items-stretch"
       aria-label="Main navigation"
     >
-      {NAV_ITEMS.map(({ label, icon: Icon, href }) => {
+      {NAV_ITEMS.map(({ labelKey, icon: Icon, href }) => {
         const isActive =
           href === "/" ? pathname === "/" : pathname.startsWith(href);
 
@@ -64,7 +66,7 @@ export default function BottomNav() {
               ].join(" ")}
               style={{ fontSize: "0.6875rem", lineHeight: "0.875rem" }}
             >
-              {label}
+              {t(labelKey)}
             </span>
           </Link>
         );

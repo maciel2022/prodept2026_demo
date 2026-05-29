@@ -2,9 +2,11 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
-import { CaretDown, SignOut, ShieldStar, UserCircle } from "@phosphor-icons/react/dist/ssr";
+import { useState, useRef, useEffect, useTransition } from "react";
+import { CaretDown, SignOut, ShieldStar, UserCircle, GlobeSimple } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/app/login/actions";
+import { useTranslations, useLocale } from "next-intl";
+import { setLocale } from "@/app/actions";
 
 type Props = {
   user?: { name: string; email: string; image?: string; isAdmin?: boolean } | null;
@@ -20,8 +22,19 @@ function getInitials(name: string): string {
 }
 
 export default function Navbar({ user }: Props) {
+  const t = useTranslations("nav");
+  const locale = useLocale();
+  const [, startTransition] = useTransition();
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  function toggleLocale() {
+    const next = locale === "en" ? "es" : "en";
+    startTransition(async () => {
+      await setLocale(next);
+      window.location.reload();
+    });
+  }
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -71,12 +84,27 @@ export default function Navbar({ user }: Props) {
 
       {/* Right side */}
       <div className="flex items-center gap-3 ml-4 shrink-0">
+        {/* Locale toggle */}
+        <button
+          type="button"
+          onClick={toggleLocale}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full label-bold tracking-wider text-xs transition-all hover:opacity-80 cursor-pointer"
+          style={{
+            background: "var(--color-surface-container-high)",
+            color: "var(--color-on-surface-variant)",
+            border: "1px solid color-mix(in srgb, var(--color-outline-variant) 60%, transparent)",
+          }}
+        >
+          <GlobeSimple size={16} />
+          {locale === "en" ? "ES" : "EN"}
+        </button>
+
         {user ? (
           <div className="relative" ref={menuRef}>
             <button
               onClick={() => setMenuOpen((v) => !v)}
               className="flex items-center gap-2 cursor-pointer"
-              aria-label="User menu"
+              aria-label={t("userMenu")}
               aria-expanded={menuOpen}
             >
               {user.image ? (
@@ -131,7 +159,7 @@ export default function Navbar({ user }: Props) {
                     className="text-on-surface"
                     style={{ fontSize: "var(--text-body-md)", fontFamily: "var(--font-body)" }}
                   >
-                    My Profile
+                    {t("myProfile")}
                   </span>
                 </Link>
 
@@ -146,7 +174,7 @@ export default function Navbar({ user }: Props) {
                       className="text-on-surface"
                       style={{ fontSize: "var(--text-body-md)", fontFamily: "var(--font-body)" }}
                     >
-                      Admin Panel
+                      {t("adminPanel")}
                     </span>
                   </Link>
                 )}
@@ -161,7 +189,7 @@ export default function Navbar({ user }: Props) {
                       className="text-on-surface"
                       style={{ fontSize: "var(--text-body-md)", fontFamily: "var(--font-body)" }}
                     >
-                      Sign Out
+                      {t("signOut")}
                     </span>
                   </button>
                 </form>
@@ -173,7 +201,7 @@ export default function Navbar({ user }: Props) {
             href="/login"
             className="label-bold text-primary-fixed hover:text-primary-container transition-colors no-underline tracking-widest"
           >
-            SIGN IN
+            {t("signIn")}
           </Link>
         )}
       </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { SignOut } from "@phosphor-icons/react/dist/ssr";
 import { leaveLeague } from "./actions";
 
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export default function LeaveLeagueButton({ leagueId, leagueName }: Props) {
+  const t = useTranslations("leagues");
   const [confirming, setConfirming] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -38,7 +40,7 @@ export default function LeaveLeagueButton({ leagueId, leagueName }: Props) {
         }}
       >
         <SignOut size={14} />
-        <span className="label-bold">Leave</span>
+        <span className="label-bold">{t("leave")}</span>
       </button>
     );
   }
@@ -46,7 +48,7 @@ export default function LeaveLeagueButton({ leagueId, leagueName }: Props) {
   return (
     <div className="space-y-2">
       <p className="text-on-surface-variant" style={{ fontSize: "var(--text-label-bold)" }}>
-        Leave <span className="text-on-surface font-bold">{leagueName}</span>?
+        {t("leaveConfirm", { name: leagueName })}
       </p>
       <div className="flex gap-2">
         <button
@@ -55,14 +57,14 @@ export default function LeaveLeagueButton({ leagueId, leagueName }: Props) {
           className="flex-1 rounded-lg py-1.5 label-bold text-xs tracking-widest transition-opacity disabled:opacity-50 cursor-pointer"
           style={{ background: "var(--color-error-container)", color: "var(--color-on-error-container)" }}
         >
-          {pending ? "LEAVING..." : "CONFIRM"}
+          {pending ? t("leaving") : t("confirm")}
         </button>
         <button
           onClick={() => { setConfirming(false); setError(null); }}
           className="flex-1 rounded-lg py-1.5 label-bold text-xs tracking-widest cursor-pointer"
           style={{ background: "var(--color-surface-container-high)", color: "var(--color-on-surface)" }}
         >
-          CANCEL
+          {t("cancel")}
         </button>
       </div>
       {error && <p className="text-error text-xs font-bold">{error}</p>}

@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ArrowLeft, Lock, PencilSimple } from "@phosphor-icons/react/dist/ssr";
+import { getTranslations, getLocale } from "next-intl/server";
 
 import { auth } from "@/auth";
 import { formatMatchDate, formatStageLabel } from "@/lib/format";
@@ -53,8 +54,11 @@ export default async function PredictionMatchPage({ params }: Props) {
   if (!user) redirect("/login");
   if (!match) notFound();
 
+  const t = await getTranslations("predictionDetail");
+  const locale = await getLocale();
+
   const isClosed = match.status === "FINISHED" || match.status === "LIVE";
-  const stageLabel = formatStageLabel(match.stage, match.group);
+  const stageLabel = formatStageLabel(match.stage, match.group, locale);
 
   return (
     <>
@@ -77,7 +81,7 @@ export default async function PredictionMatchPage({ params }: Props) {
             style={{ fontSize: "var(--text-label-bold)" }}
           >
             <ArrowLeft size={18} />
-            Back
+            {t("back")}
           </Link>
 
           <div className="flex items-center justify-between gap-3">
@@ -88,11 +92,11 @@ export default async function PredictionMatchPage({ params }: Props) {
               <h1
                 className="font-display text-on-surface leading-none text-[3rem] md:text-[4rem] lg:text-[5rem]"
               >
-                YOUR{" "}
-                <span style={{ color: "var(--color-primary-fixed)" }}>PRODE</span>
+                {t("title")}{" "}
+                <span style={{ color: "var(--color-primary-fixed)" }}>{t("titleHighlight")}</span>
               </h1>
               <p className="text-on-surface-variant text-sm md:text-base">
-                {formatMatchDate(match.matchDate, "long")}
+                {formatMatchDate(match.matchDate, "long", locale)}
               </p>
             </div>
             <Image
@@ -116,15 +120,15 @@ export default async function PredictionMatchPage({ params }: Props) {
                   fontSize: "var(--text-headline-md)",
                 }}
               >
-                Predictions closed
+                {t("closed")}
               </p>
               <p
                 className="text-on-surface-variant"
                 style={{ fontSize: "var(--text-label-bold)" }}
               >
                 {match.status === "LIVE"
-                  ? "This match is in progress."
-                  : "This match has ended."}
+                  ? t("inProgress")
+                  : t("ended")}
               </p>
             </div>
 
@@ -133,7 +137,7 @@ export default async function PredictionMatchPage({ params }: Props) {
               match.awayScore != null && (
                 <div className="flex flex-col items-center gap-1 mt-2">
                   <span className="label-bold text-on-surface-variant tracking-widest uppercase">
-                    Final result
+                    {t("finalResult")}
                   </span>
                   <span
                     className="font-display text-primary-fixed"
@@ -160,7 +164,7 @@ export default async function PredictionMatchPage({ params }: Props) {
                 color: "var(--color-on-secondary-container)",
               }}
             >
-              View all predictions
+              {t("viewAll")}
             </Link>
           </div>
         ) : (
@@ -178,8 +182,7 @@ export default async function PredictionMatchPage({ params }: Props) {
                   className="label-bold"
                   style={{ fontSize: "var(--text-label-bold)" }}
                 >
-                  Editing existing prediction: {existingPrediction.homeScore}
-                  –{existingPrediction.awayScore}
+                  {t("editing", { score: `${existingPrediction.homeScore}–${existingPrediction.awayScore}` })}
                 </p>
               </div>
             )}

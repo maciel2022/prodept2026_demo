@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { Crown, Medal, Trophy } from "@phosphor-icons/react/dist/ssr";
+import { getTranslations } from "next-intl/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -44,7 +45,6 @@ export default async function LeaderboardPage({ searchParams }: Props) {
 
   // Determine selected league name
   const selectedLeague = leagueId ? leagues.find((l) => l.id === leagueId) : null;
-  const leagueLabel = selectedLeague ? selectedLeague.name : "Global Ranking";
 
   // Build ranked list based on selected league
   let ranked: { id: string; name: string; image: string | null; totalPoints: number; totalPredictions: number }[];
@@ -100,6 +100,8 @@ export default async function LeaderboardPage({ searchParams }: Props) {
   const myRank = myIndex >= 0 ? myIndex + 1 : ranked.length + 1;
   const top3 = ranked.slice(0, 3);
 
+  const t = await getTranslations("leaderboard");
+
   // Podium icons
   const PODIUM_ICONS = [
     { Icon: Crown, color: "#FFD700", label: "1st" },
@@ -137,16 +139,16 @@ export default async function LeaderboardPage({ searchParams }: Props) {
           <section className="pt-6 md:pt-10 pb-2 flex items-center justify-between gap-3">
             <div className="space-y-1 min-w-0">
               <p className="label-bold text-primary-fixed tracking-widest">
-                FIFA WORLD CUP 2026
+                {t("topLabel")}
               </p>
               <h1 className="font-display text-on-surface leading-none text-[3rem] md:text-[4rem] lg:text-[5rem]">
-                LEADER
-                <span style={{ color: "var(--color-primary-fixed)" }}>BOARD</span>
+                {t("title")}{" "}
+                <span style={{ color: "var(--color-primary-fixed)" }}>{t("titleHighlight")}</span>
               </h1>
               <p className="text-on-surface-variant text-sm">
-                You are ranked <span className="text-primary-fixed font-bold">#{myRank}</span> of {ranked.length} players
+                {t("ranked")} <span className="text-primary-fixed font-bold">#{myRank}</span> {t("ofPlayers", { count: ranked.length })}
                 {selectedLeague && (
-                  <span> in <span className="text-on-surface font-semibold">{selectedLeague.name}</span></span>
+                  <span> {t("in")} <span className="text-on-surface font-semibold">{selectedLeague.name}</span></span>
                 )}
               </p>
             </div>
@@ -173,7 +175,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
             <section className="space-y-3">
               <h2 className="label-bold text-gold uppercase tracking-widest">
                 <Trophy size={14} weight="fill" className="inline mr-1" />
-                Top Predictors
+                {t("topPredictors")}
               </h2>
               <div className="grid grid-cols-3 gap-2 md:gap-4">
                 {/* Reorder for visual podium: 2nd, 1st, 3rd */}
@@ -223,7 +225,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
                       <p className="text-on-surface font-bold text-xs md:text-sm truncate max-w-full">
                         {entry.name}
                         {isMe && (
-                          <span className="text-primary-fixed ml-1 text-[0.6rem]">YOU</span>
+                          <span className="text-primary-fixed ml-1 text-[0.6rem]">{t("you")}</span>
                         )}
                       </p>
                       <p
@@ -237,7 +239,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
                         {entry.totalPoints}
                       </p>
                       <span className="label-bold text-on-surface-variant" style={{ fontSize: "0.6rem" }}>
-                        {entry.totalPredictions} picks
+                        {entry.totalPredictions} {t("picks")}
                       </span>
                     </div>
                   );
@@ -251,7 +253,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
         <AnimatedSection delay={0.25}>
           <section className="space-y-3">
             <h2 className="label-bold text-primary-fixed uppercase tracking-widest">
-              {selectedLeague ? selectedLeague.name : "Full Rankings"}
+              {selectedLeague ? selectedLeague.name : t("fullRankings")}
             </h2>
             <div className="space-y-2">
               {ranked.map((entry, idx) => {
@@ -305,7 +307,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
                       {entry.name}
                       {isMe && (
                         <span className="ml-2 label-bold text-primary-fixed-dim" style={{ fontSize: "0.6875rem" }}>
-                          YOU
+                          {t("you")}
                         </span>
                       )}
                     </span>
@@ -315,7 +317,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
                       className="shrink-0 text-on-surface-variant"
                       style={{ fontSize: "var(--text-label-bold)" }}
                     >
-                      {entry.totalPredictions} picks
+                      {entry.totalPredictions} {t("picks")}
                     </span>
 
                     {/* Points */}
@@ -323,7 +325,7 @@ export default async function LeaderboardPage({ searchParams }: Props) {
                       {entry.totalPoints}
                     </span>
                     <span className="shrink-0 label-bold text-on-surface-variant" style={{ fontSize: "var(--text-label-bold)" }}>
-                      pts
+                      {t("pts")}
                     </span>
                   </div>
                 );

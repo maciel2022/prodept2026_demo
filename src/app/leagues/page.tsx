@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { Globe, Lock, ShareNetwork, UsersThree } from "@phosphor-icons/react/dist/ssr";
+import { getTranslations } from "next-intl/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -49,6 +50,8 @@ export default async function LeaguesPage() {
     }),
   ]);
   if (!user) redirect("/login");
+
+  const t = await getTranslations("leagues");
 
   // ── 4. Build league view models ───────────────────────────────────────────────
   type MemberEntry = {
@@ -114,18 +117,20 @@ export default async function LeaguesPage() {
         <section className="pt-6 md:pt-10 pb-2 flex items-center justify-between gap-3">
           <div className="space-y-1 md:space-y-2 min-w-0">
             <p className="label-bold text-primary-fixed tracking-widest">
-              FIFA WORLD CUP 2026
+              {t("topLabel")}
             </p>
             <h1
               className="font-display text-on-surface leading-none text-[3rem] md:text-[4rem] lg:text-[5rem]"
             >
-              MY{" "}
-              <span style={{ color: "var(--color-primary-fixed)" }}>LEAGUES</span>
+              {t("title")}{" "}
+              <span style={{ color: "var(--color-primary-fixed)" }}>{t("titleHighlight")}</span>
             </h1>
             <p className="text-on-surface-variant text-sm md:text-base">
               {leagueViews.length === 0
-                ? "Create or join your first league"
-                : `${leagueViews.length} ${leagueViews.length === 1 ? "league" : "leagues"}`}
+                ? t("emptySubtitle")
+                : leagueViews.length === 1
+                  ? t("leagueCount_one", { count: 1 })
+                  : t("leagueCount_other", { count: leagueViews.length })}
             </p>
           </div>
           <Image
@@ -151,7 +156,7 @@ export default async function LeaguesPage() {
         {leagueViews.length > 0 ? (
           <section className="space-y-4 md:space-y-6">
             <h2 className="label-bold text-primary-fixed uppercase tracking-widest">
-              YOUR LEAGUES
+              {t("yourLeagues")}
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
@@ -201,7 +206,7 @@ export default async function LeaguesPage() {
                         ) : (
                           <Lock size={14} weight="fill" />
                         )}
-                        {league.isGlobal ? "Classic League" : "Private League"}
+                        {league.isGlobal ? t("classicLeague") : t("privateLeague")}
                       </span>
                     </div>
 
@@ -218,7 +223,7 @@ export default async function LeaguesPage() {
                         className="text-on-surface-variant"
                         style={{ fontSize: "var(--text-label-bold)" }}
                       >
-                        your rank
+                        {t("yourRank")}
                       </p>
                     </div>
                   </div>
@@ -233,7 +238,7 @@ export default async function LeaguesPage() {
                         className="label-bold text-on-surface-variant tracking-widest"
                         style={{ fontSize: "0.625rem" }}
                       >
-                        TOTAL POINTS
+                        {t("totalPoints")}
                       </p>
                       <p
                         className="font-display text-primary-fixed tabular-nums leading-none"
@@ -252,7 +257,7 @@ export default async function LeaguesPage() {
                         className="label-bold text-on-surface-variant tracking-widest"
                         style={{ fontSize: "0.625rem" }}
                       >
-                        CURRENT ROUND
+                        {t("currentRound")}
                       </p>
                       <p
                         className="font-display text-on-surface-variant tabular-nums leading-none"
@@ -276,7 +281,7 @@ export default async function LeaguesPage() {
                         className="text-on-surface-variant flex-1"
                         style={{ fontSize: "var(--text-label-bold)" }}
                       >
-                        Invite code:
+                        {t("inviteCode")}
                       </span>
                       <span
                         className="font-display text-primary-fixed tracking-wider md:tracking-widest tabular-nums text-sm md:text-[1.25rem]"
@@ -297,7 +302,7 @@ export default async function LeaguesPage() {
                   {top3.length > 0 && (
                     <div className="space-y-2">
                       <p className="label-bold text-on-surface-variant tracking-widest">
-                        STANDINGS
+                        {t("standings")}
                       </p>
                       <div className="space-y-2">
                         {top3.map((member, idx) => (
@@ -356,13 +361,13 @@ export default async function LeaguesPage() {
               className="text-on-surface-variant"
               style={{ fontSize: "var(--text-body-lg)" }}
             >
-              You don't belong to any league yet.
+              {t("noLeagues")}
             </p>
             <p
               className="text-on-surface-variant"
               style={{ fontSize: "var(--text-label-bold)" }}
             >
-              Create a new one or join with an invite code.
+              {t("noLeaguesHint")}
             </p>
           </div>
         )}

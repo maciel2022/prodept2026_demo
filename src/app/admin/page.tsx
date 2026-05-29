@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { ShieldStar } from "@phosphor-icons/react/dist/ssr";
+import { getTranslations } from "next-intl/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -40,6 +41,8 @@ export default async function AdminPage() {
   const totalUsers = await prisma.user.count();
   const finishedCount = finishedMatches.length;
 
+  const t = await getTranslations("admin");
+
   function serializeMatch(m: (typeof matches)[number]) {
     return {
       id: m.id,
@@ -71,9 +74,9 @@ export default async function AdminPage() {
         <AnimatedSection>
           <section className="pt-6 md:pt-10 pb-2 flex items-center justify-between gap-3">
             <div className="space-y-1 md:space-y-2 min-w-0">
-              <p className="label-bold text-coral tracking-widest">ADMIN PANEL</p>
+              <p className="label-bold text-coral tracking-widest">{t("topLabel")}</p>
               <h1 className="font-display text-on-surface leading-none text-[3rem] md:text-[4rem] lg:text-[5rem]">
-                MATCH <span style={{ color: "var(--color-primary-fixed)" }}>CONTROL</span>
+                {t("title")} <span style={{ color: "var(--color-primary-fixed)" }}>{t("titleHighlight")}</span>
               </h1>
             </div>
             <ShieldStar size={48} weight="fill" className="text-coral shrink-0" />

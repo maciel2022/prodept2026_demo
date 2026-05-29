@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import LoginForm from "./LoginForm";
 
 export const metadata = { title: "Sign In — PRODEPT 2026" };
@@ -9,6 +10,8 @@ export const metadata = { title: "Sign In — PRODEPT 2026" };
 export default async function LoginPage() {
   const session = await auth();
   if (session?.user) redirect("/");
+
+  const t = await getTranslations("auth");
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden">
@@ -65,7 +68,7 @@ export default async function LoginPage() {
           </Link>
 
           <span className="bg-primary-container text-on-primary-container label-bold rounded-full px-3 py-1">
-            Exclusive Access
+            {t("exclusiveAccess")}
           </span>
 
           <p
@@ -75,7 +78,7 @@ export default async function LoginPage() {
               lineHeight: "var(--text-body-md--line-height)",
             }}
           >
-            Predict the road to glory at the 2026 World Cup.
+            {t("signInSubtitle")}
           </p>
         </div>
 
@@ -86,13 +89,13 @@ export default async function LoginPage() {
             className="font-body text-on-surface-variant"
             style={{ fontSize: "var(--text-body-md)" }}
           >
-            Don&apos;t have an account?
+            {t("noAccount")}
           </p>
           <Link
             href="/register"
             className="label-bold text-primary-fixed hover:text-primary-container transition-colors no-underline tracking-widest"
           >
-            CREATE ACCOUNT
+            {t("createAccount")}
           </Link>
         </div>
       </div>

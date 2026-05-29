@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { SoccerBall, ClockCounterClockwise } from "@phosphor-icons/react";
 
 type TabKey = "upcoming" | "history";
 
-const TABS: { key: TabKey; label: string; icon: typeof SoccerBall }[] = [
-  { key: "upcoming", label: "UPCOMING", icon: SoccerBall },
-  { key: "history", label: "MY HISTORY", icon: ClockCounterClockwise },
+const TABS: { key: TabKey; labelKey: "upcoming" | "myHistory"; icon: typeof SoccerBall }[] = [
+  { key: "upcoming", labelKey: "upcoming", icon: SoccerBall },
+  { key: "history", labelKey: "myHistory", icon: ClockCounterClockwise },
 ];
 
 type Props = {
@@ -23,6 +24,7 @@ export default function PredictionTabs({
   upcoming,
   history,
 }: Props) {
+  const t = useTranslations("predictions");
   const [tab, setTab] = useState<TabKey>("upcoming");
   const counts: Record<TabKey, number> = { upcoming: upcomingCount, history: historyCount };
 
@@ -33,7 +35,7 @@ export default function PredictionTabs({
         style={{ background: "var(--color-surface-container)" }}
         role="tablist"
       >
-        {TABS.map(({ key, label, icon: Icon }) => {
+        {TABS.map(({ key, labelKey, icon: Icon }) => {
           const isActive = tab === key;
           return (
             <button
@@ -56,7 +58,7 @@ export default function PredictionTabs({
               }}
             >
               <Icon size={16} weight={isActive ? "fill" : "regular"} />
-              {label} ({counts[key]})
+              {t(labelKey)} ({counts[key]})
             </button>
           );
         })}

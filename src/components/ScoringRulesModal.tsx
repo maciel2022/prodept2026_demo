@@ -3,40 +3,42 @@
 import { useState } from "react";
 import Image from "next/image";
 import { X, Target, CheckCircle, PlusMinus, Trophy, Info } from "@phosphor-icons/react";
+import { useTranslations } from "next-intl";
 
-const RULES = [
+const RULES_CONFIG = [
   {
     icon: Target,
-    label: "EXACT SCORE",
+    labelKey: "exactScore" as const,
     points: "5",
-    description: "You nailed the exact result",
+    descriptionKey: "exactScoreDesc" as const,
     example: "Pred 2-1 · Real 2-1",
   },
   {
     icon: CheckCircle,
-    label: "CORRECT RESULT",
+    labelKey: "correctResult" as const,
     points: "3",
-    description: "Right winner or draw",
+    descriptionKey: "correctResultDesc" as const,
     example: "Pred 3-1 · Real 2-0",
   },
   {
     icon: PlusMinus,
-    label: "GOAL DIFFERENCE",
+    labelKey: "goalDifference" as const,
     points: "+1",
-    description: "Bonus for matching the goal diff",
+    descriptionKey: "goalDifferenceDesc" as const,
     example: "Pred 3-1 · Real 4-2",
   },
   {
     icon: Trophy,
-    label: "KNOCKOUT BONUS",
+    labelKey: "knockoutBonus" as const,
     points: "+2",
-    description: "Correct match winner (incl. penalties)",
+    descriptionKey: "knockoutBonusDesc" as const,
     example: "Knockout stages only",
   },
 ];
 
 export default function ScoringRulesModal() {
   const [open, setOpen] = useState(false);
+  const t = useTranslations("scoring");
 
   return (
     <>
@@ -51,7 +53,7 @@ export default function ScoringRulesModal() {
         }}
       >
         <Info size={16} weight="fill" />
-        RULES
+        {t("rules")}
       </button>
 
       {open && (
@@ -108,7 +110,7 @@ export default function ScoringRulesModal() {
                   className="font-display text-center mt-1.5 leading-none"
                   style={{ color: "#3d2e00", fontSize: "1.3rem" }}
                 >
-                  SCORING RULES
+                  {t("title")}
                 </h2>
                 <div
                   className="w-12 h-0.5 mt-1.5 rounded-full"
@@ -118,9 +120,9 @@ export default function ScoringRulesModal() {
 
               {/* Rules list */}
               <div className="flex-1 px-4 space-y-1.5 overflow-y-auto">
-                {RULES.map((rule) => (
+                {RULES_CONFIG.map((rule) => (
                   <div
-                    key={rule.label}
+                    key={rule.labelKey}
                     className="flex items-center gap-2.5 rounded-xl px-3 py-2"
                     style={{ background: "rgba(0,0,0,0.08)" }}
                   >
@@ -136,7 +138,7 @@ export default function ScoringRulesModal() {
                           className="font-bold tracking-wider"
                           style={{ color: "#3d2e00", fontSize: "0.6rem" }}
                         >
-                          {rule.label}
+                          {t(rule.labelKey)}
                         </span>
                         <span
                           className="font-display shrink-0"
@@ -146,7 +148,7 @@ export default function ScoringRulesModal() {
                         </span>
                       </div>
                       <p style={{ color: "#6b5300", fontSize: "0.6rem", lineHeight: "1.3" }}>
-                        {rule.description}
+                        {t(rule.descriptionKey)}
                       </p>
                     </div>
                   </div>
@@ -162,7 +164,7 @@ export default function ScoringRulesModal() {
                   <div className="flex-1 py-2 text-center">
                     <p className="font-display" style={{ color: "#3d2e00", fontSize: "1.4rem", lineHeight: 1 }}>5</p>
                     <p className="font-bold tracking-wider mt-0.5" style={{ color: "#6b5300", fontSize: "0.5rem" }}>
-                      MAX GROUPS
+                      {t("maxGroups")}
                     </p>
                   </div>
                   <div
@@ -172,7 +174,7 @@ export default function ScoringRulesModal() {
                   <div className="flex-1 py-2 text-center">
                     <p className="font-display" style={{ color: "#3d2e00", fontSize: "1.4rem", lineHeight: 1 }}>7</p>
                     <p className="font-bold tracking-wider mt-0.5" style={{ color: "#6b5300", fontSize: "0.5rem" }}>
-                      MAX KNOCKOUT
+                      {t("maxKnockout")}
                     </p>
                   </div>
                 </div>
@@ -188,7 +190,7 @@ export default function ScoringRulesModal() {
                     fontSize: "0.85rem",
                   }}
                 >
-                  GOT IT!
+                  {t("gotIt")}
                 </button>
               </div>
             </div>

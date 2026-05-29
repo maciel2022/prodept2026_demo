@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { auth } from "@/auth";
+import { getTranslations } from "next-intl/server";
 import RegisterForm from "./RegisterForm";
 
 export const metadata = { title: "Create Account — PRODEPT 2026" };
@@ -9,6 +10,8 @@ export const metadata = { title: "Create Account — PRODEPT 2026" };
 export default async function RegisterPage() {
   const session = await auth();
   if (session?.user) redirect("/");
+
+  const t = await getTranslations("auth");
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4 relative overflow-hidden py-12">
@@ -31,10 +34,10 @@ export default async function RegisterPage() {
             </span>
           </Link>
           <span className="bg-primary-container text-on-primary-container label-bold rounded-full px-3 py-1">
-            Create Account
+            {t("createAccountLabel")}
           </span>
           <p className="font-body text-on-surface-variant text-center mt-1" style={{ fontSize: "var(--text-body-md)", lineHeight: "var(--text-body-md--line-height)" }}>
-            Join the game and compete with your colleagues.
+            {t("registerSubtitle")}
           </p>
         </div>
 
@@ -42,10 +45,10 @@ export default async function RegisterPage() {
 
         <div className="flex flex-col items-center gap-2 pt-2 border-t border-outline-variant">
           <p className="font-body text-on-surface-variant" style={{ fontSize: "var(--text-body-md)" }}>
-            Already have an account?
+            {t("hasAccount")}
           </p>
           <Link href="/login" className="label-bold text-primary-fixed hover:text-primary-container transition-colors no-underline tracking-widest">
-            SIGN IN
+            {t("signInButton")}
           </Link>
         </div>
       </div>

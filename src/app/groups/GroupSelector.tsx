@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { GROUP_COLORS, KNOCKOUT_STAGES } from "./constants";
 
 const GROUPS_ROW1 = ["A", "B", "C", "D", "E", "F"];
@@ -34,6 +35,7 @@ function GroupPill({
 }
 
 export default function GroupSelector() {
+  const t = useTranslations("groups");
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeGroup = searchParams.get("group") ?? "A";
@@ -59,7 +61,7 @@ export default function GroupSelector() {
               : "bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface",
           ].join(" ")}
         >
-          GROUPS
+          {t("groupsTab")}
         </button>
         <button
           onClick={() => navigate({ phase: "knockouts", stage: activeStage })}
@@ -70,7 +72,7 @@ export default function GroupSelector() {
               : "bg-surface-container border border-outline-variant text-on-surface-variant hover:text-on-surface",
           ].join(" ")}
         >
-          KNOCKOUTS
+          {t("knockoutsTab")}
         </button>
       </div>
 
@@ -116,7 +118,7 @@ export default function GroupSelector() {
                         : { background: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", border: "1px solid var(--color-outline-variant)" }
                     }
                   >
-                    {label}
+                    {t(label)}
                   </button>
                 );
               })}
@@ -136,7 +138,7 @@ export default function GroupSelector() {
                         : { background: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", border: "1px solid var(--color-outline-variant)" }
                     }
                   >
-                    {label}
+                    {t(label)}
                   </button>
                 );
               })}
@@ -158,7 +160,7 @@ export default function GroupSelector() {
                       : { background: "var(--color-surface-container)", color: "var(--color-on-surface-variant)", border: "1px solid var(--color-outline-variant)" }
                   }
                 >
-                  {label}
+                  {t(label)}
                 </button>
               );
             })}

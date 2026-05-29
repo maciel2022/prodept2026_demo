@@ -2,10 +2,12 @@ import { redirect } from "next/navigation";
 import Image from "next/image";
 import { Suspense } from "react";
 import { Table, Trophy, ArrowRight } from "@phosphor-icons/react/dist/ssr";
+import { getTranslations, getLocale } from "next-intl/server";
 
 import type { MatchStage } from "@prisma/client";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { translateCountry } from "@/lib/countries";
 import Navbar from "@/components/Navbar";
 import BottomNav from "@/components/BottomNav";
 import MatchCard from "@/components/MatchCard";
@@ -19,6 +21,8 @@ type Props = {
 };
 
 export default async function GroupsPage({ searchParams }: Props) {
+  const t = await getTranslations("groups");
+  const locale = await getLocale();
   const session = await auth();
   if (!session?.user?.id) redirect("/login");
   const userId = session.user.id;
@@ -96,7 +100,7 @@ export default async function GroupsPage({ searchParams }: Props) {
 
   const groupColor = GROUP_COLORS[selectedGroup] ?? { bg: "#36ffc4", text: "#000" };
   const stageData = KNOCKOUT_STAGES.find((s) => s.key === selectedStage);
-  const stageLabel = stageData?.label ?? selectedStage;
+  const stageLabel = stageData ? t(stageData.label) : selectedStage;
   const stageColor = { bg: stageData?.bg ?? "#7000ff", text: stageData?.text ?? "#fff" };
 
   return (
@@ -121,19 +125,19 @@ export default async function GroupsPage({ searchParams }: Props) {
         <section className="pt-6 md:pt-10 pb-2 flex items-center justify-between gap-3">
           <div className="space-y-1 md:space-y-2 min-w-0">
             <p className="label-bold text-primary-fixed tracking-widest">
-              FIFA WORLD CUP 2026
+              {t("topLabel")}
             </p>
             <h1
               className="font-display text-on-surface leading-none text-[3rem] md:text-[4rem] lg:text-[5rem]"
             >
               {phase === "groups" ? (
-                <>GROUP <span style={{ color: "var(--color-primary-fixed)" }}>STAGE</span></>
+                <>{t("titleGroup")} <span style={{ color: "var(--color-primary-fixed)" }}>{t("titleGroupHighlight")}</span></>
               ) : (
-                <>KNOCK<span style={{ color: "var(--color-primary-fixed)" }}>OUTS</span></>
+                <>{t("titleKnock")}<span style={{ color: "var(--color-primary-fixed)" }}>{t("titleKnockHighlight")}</span></>
               )}
             </h1>
             <p className="text-on-surface-variant text-sm md:text-base">
-              USA · Mexico · Canada 2026
+              {t("subtitle")}
             </p>
           </div>
           <Image
@@ -172,10 +176,10 @@ export default async function GroupsPage({ searchParams }: Props) {
                 <h2
                   className="font-display text-on-surface leading-none text-sm md:text-2xl"
                 >
-                  GROUP {selectedGroup}
+                  {t("groupLabel", { group: selectedGroup })}
                 </h2>
                 <p className="text-on-surface-variant mt-0.5 md:mt-1 text-[0.65rem] md:text-sm">
-                  {teams.length} teams · Group Stage
+                  {t("teamsCount", { count: teams.length })}
                 </p>
               </div>
             </div>
@@ -202,14 +206,14 @@ export default async function GroupsPage({ searchParams }: Props) {
                   <Table size={16} weight="fill" className="md:hidden" style={{ color: groupColor.bg }} />
                   <Table size={18} weight="fill" className="hidden md:block" style={{ color: groupColor.bg }} />
                   <span className="label-bold text-on-surface tracking-widest text-[0.65rem] md:text-sm">
-                    STANDINGS
+                    {t("standings")}
                   </span>
                 </div>
                 <span
                   className="label-bold tracking-widest px-2 md:px-3 py-0.5 md:py-1 rounded-full text-[0.6rem] md:text-xs"
                   style={{ background: `${groupColor.bg}20`, color: groupColor.bg }}
                 >
-                  GROUP {selectedGroup}
+                  {t("groupLabel", { group: selectedGroup })}
                 </span>
               </div>
 
@@ -222,7 +226,7 @@ export default async function GroupsPage({ searchParams }: Props) {
                       style={{ background: "var(--color-surface-container-low)" }}
                     >
                       <th className="text-left pl-4 md:pl-6 pr-1 md:pr-2 py-2.5 md:py-5 label-bold text-on-surface-variant tracking-widest text-[0.6rem] md:text-xs sticky left-0 z-10" style={{ background: "var(--color-surface-container-low)" }}>
-                        TEAM
+                        {t("team")}
                       </th>
                       {["MP", "W", "D", "L", "GF", "GA", "GD", "PTS"].map((col) => (
                         <th
@@ -243,7 +247,7 @@ export default async function GroupsPage({ searchParams }: Props) {
                     {sortedTeams.length === 0 ? (
                       <tr>
                         <td colSpan={9} className="text-center py-6 md:py-8 text-on-surface-variant text-xs md:text-sm">
-                          No teams in Group {selectedGroup} yet.
+                          {t("noTeams", { group: selectedGroup })}
                         </td>
                       </tr>
                     ) : (
@@ -272,7 +276,7 @@ export default async function GroupsPage({ searchParams }: Props) {
                                   className="w-5 h-4 md:w-10 md:h-7 lg:w-12 lg:h-8"
                                 />
                                 <span className="font-semibold text-on-surface leading-tight text-[0.65rem] md:text-base lg:text-lg whitespace-nowrap">
-                                  {team.name}
+                                  {translateCountry(team.name, locale)}
                                 </span>
                               </div>
                             </td>
@@ -306,7 +310,7 @@ export default async function GroupsPage({ searchParams }: Props) {
               <div className="px-4 md:px-6 py-2 md:py-4 border-t border-[color-mix(in_srgb,var(--color-outline-variant)_30%,transparent)] flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: groupColor.bg }} aria-hidden="true" />
                 <span className="text-on-surface-variant text-xs md:text-sm">
-                  Qualifies for Knockouts
+                  {t("qualifies")}
                 </span>
               </div>
             </div>
@@ -337,7 +341,7 @@ export default async function GroupsPage({ searchParams }: Props) {
                   {stageLabel.toUpperCase()}
                 </h2>
                 <p className="text-on-surface-variant mt-0.5 md:mt-1 text-[0.65rem] md:text-sm">
-                  Knockout stage · Single match
+                  {t("knockoutSingle")}
                 </p>
               </div>
             </div>
@@ -348,10 +352,10 @@ export default async function GroupsPage({ searchParams }: Props) {
                 <Trophy size={36} className="text-on-surface-variant mx-auto md:hidden" />
                 <Trophy size={48} className="text-on-surface-variant mx-auto hidden md:block" />
                 <p className="text-on-surface-variant text-sm md:text-lg">
-                  The {stageLabel} matches will be determined after the group stage ends.
+                  {t("knockoutPending", { stage: stageLabel })}
                 </p>
                 <p className="text-on-surface-variant text-xs md:text-sm">
-                  Check back after the group stage wraps up.
+                  {t("knockoutHint")}
                 </p>
               </div>
             ) : (
@@ -382,7 +386,7 @@ export default async function GroupsPage({ searchParams }: Props) {
             {/* Road to the final */}
             <div className="glass-card p-4 md:p-6 rounded-xl">
               <p className="label-bold text-on-surface-variant tracking-widest mb-3 md:mb-4 text-[0.65rem] md:text-sm">
-                ROAD TO THE FINAL
+                {t("roadToFinal")}
               </p>
               <div className="flex items-center gap-1 md:gap-3 flex-wrap md:flex-nowrap pb-2">
                 {KNOCKOUT_STAGES.map((s, i) => {
@@ -397,7 +401,7 @@ export default async function GroupsPage({ searchParams }: Props) {
                             : { background: `${s.bg}15`, color: s.bg, border: `1px solid ${s.bg}30` }
                         }
                       >
-                        {s.label}
+                        {t(s.label)}
                       </div>
                       {i < KNOCKOUT_STAGES.length - 1 && (
                         <ArrowRight size={10} className="text-on-surface-variant shrink-0 md:hidden" />

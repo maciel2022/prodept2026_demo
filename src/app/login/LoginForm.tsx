@@ -1,12 +1,14 @@
 "use client";
 
 import { useActionState, useState } from "react";
+import { useTranslations } from "next-intl";
 import { Eye, EyeSlash, GoogleLogo } from "@phosphor-icons/react/dist/ssr";
 import { loginAction, googleSignIn } from "./actions";
 
 const initialState: { error: string } | null = null;
 
 export default function LoginForm() {
+  const t = useTranslations("auth");
   const [state, formAction, pending] = useActionState(loginAction, initialState);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -25,7 +27,7 @@ export default function LoginForm() {
           }}
         >
           <GoogleLogo size={22} weight="bold" />
-          Sign in with Google
+          {t("signInGoogle")}
         </button>
       </form>
 
@@ -36,7 +38,7 @@ export default function LoginForm() {
           className="text-on-surface-variant label-bold tracking-widest"
           style={{ fontSize: "0.6875rem" }}
         >
-          OR
+          {t("or")}
         </span>
         <div className="flex-1 h-px bg-outline-variant" />
       </div>
@@ -58,7 +60,7 @@ export default function LoginForm() {
 
         <div className="flex flex-col gap-1">
           <label htmlFor="login-email" className="label-bold text-on-surface-variant">
-            Email
+            {t("email")}
           </label>
           <input
             id="login-email"
@@ -68,13 +70,13 @@ export default function LoginForm() {
             required
             className="bg-transparent border-0 border-b border-outline-variant text-on-surface py-2.5 outline-none focus:border-primary-fixed transition-colors placeholder:text-outline font-body text-body-md"
             style={{ fontSize: "var(--text-body-md)" }}
-            placeholder="you@company.com"
+            placeholder={t("emailPlaceholder")}
           />
         </div>
 
         <div className="flex flex-col gap-1">
           <label htmlFor="login-password" className="label-bold text-on-surface-variant">
-            Password
+            {t("password")}
           </label>
           <div className="relative flex items-center">
             <input
@@ -85,13 +87,13 @@ export default function LoginForm() {
               required
               className="w-full bg-transparent border-0 border-b border-outline-variant text-on-surface py-2.5 pr-10 outline-none focus:border-primary-fixed transition-colors placeholder:text-outline font-body text-body-md"
               style={{ fontSize: "var(--text-body-md)" }}
-              placeholder="••••••••"
+              placeholder={t("passwordPlaceholder")}
             />
             <button
               type="button"
               onClick={() => setShowPassword((v) => !v)}
               className="absolute right-0 text-on-surface-variant hover:text-on-surface transition-colors"
-              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-label={showPassword ? t("hidePassword") : t("showPassword")}
             >
               {showPassword ? <EyeSlash size={20} /> : <Eye size={20} />}
             </button>
@@ -103,7 +105,7 @@ export default function LoginForm() {
           disabled={pending}
           className="mt-2 w-full bg-primary-container text-on-primary-container label-bold rounded-xl py-4 tracking-widest hover:opacity-90 active:scale-[0.98] transition-all disabled:opacity-60 disabled:cursor-not-allowed font-display"
         >
-          {pending ? "SIGNING IN..." : "SIGN IN"}
+          {pending ? t("signingIn") : t("signInButton")}
         </button>
       </form>
     </div>

@@ -1,10 +1,12 @@
 "use client";
 
 import { useState, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { SignIn, CaretDown } from "@phosphor-icons/react/dist/ssr";
 import { joinLeague } from "./actions";
 
 export default function JoinLeagueModal() {
+  const t = useTranslations("leagues");
   const [expanded, setExpanded] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +68,7 @@ export default function JoinLeagueModal() {
             className="font-semibold text-on-surface"
             style={{ fontSize: "var(--text-body-lg)" }}
           >
-            Join League
+            {t("joinLeague")}
           </span>
         </div>
         <CaretDown
@@ -87,7 +89,7 @@ export default function JoinLeagueModal() {
               htmlFor="invite-code"
               className="label-bold text-on-surface-variant tracking-widest"
             >
-              INVITE CODE
+              {t("joinCodeLabel")}
             </label>
             <input
               id="invite-code"
@@ -95,7 +97,7 @@ export default function JoinLeagueModal() {
               type="text"
               required
               maxLength={6}
-              placeholder="XXXXXX"
+              placeholder={t("joinCodePlaceholder")}
               autoComplete="off"
               autoCapitalize="characters"
               spellCheck={false}
@@ -112,7 +114,7 @@ export default function JoinLeagueModal() {
               className="text-center text-on-surface-variant"
               style={{ fontSize: "var(--text-label-bold)" }}
             >
-              6 characters · letters and numbers only
+              {t("joinCodeHint")}
             </p>
           </div>
 
@@ -124,7 +126,7 @@ export default function JoinLeagueModal() {
 
           {success && (
             <p className="text-primary-fixed label-bold" style={{ fontSize: "var(--text-label-bold)" }}>
-              Joined league successfully.
+              {t("joined")}
             </p>
           )}
 
@@ -134,7 +136,7 @@ export default function JoinLeagueModal() {
             className="w-full rounded-lg px-4 py-3 label-bold uppercase tracking-widest transition-opacity disabled:opacity-60 border border-outline-variant text-on-surface hover:bg-surface-container-high"
             style={{ fontSize: "var(--text-label-bold)" }}
           >
-            {pending ? "Joining..." : "JOIN LEAGUE"}
+            {pending ? t("joining") : t("joinButton")}
           </button>
         </form>
       )}

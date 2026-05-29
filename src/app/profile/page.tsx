@@ -8,6 +8,7 @@ import {
   CheckCircle,
   XCircle,
 } from "@phosphor-icons/react/dist/ssr";
+import { getTranslations, getLocale } from "next-intl/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -50,6 +51,9 @@ export default async function ProfilePage() {
 
   if (!user) redirect("/login");
 
+  const t = await getTranslations("profile");
+  const locale = await getLocale();
+
   const totalPoints = allPoints._sum.points ?? 0;
 
   // Global rank
@@ -80,7 +84,7 @@ export default async function ProfilePage() {
       .toUpperCase();
   }
 
-  const joinDate = user.createdAt.toLocaleDateString("en-US", {
+  const joinDate = user.createdAt.toLocaleDateString(locale, {
     month: "long",
     year: "numeric",
   });
@@ -140,7 +144,7 @@ export default async function ProfilePage() {
                   className="text-on-surface-variant mt-0.5"
                   style={{ fontSize: "var(--text-label-bold)" }}
                 >
-                  Member since {joinDate}
+                  {t("memberSince", { date: joinDate })}
                 </p>
               </div>
             </div>
@@ -151,32 +155,32 @@ export default async function ProfilePage() {
         <AnimatedSection delay={0.1}>
           <section className="space-y-3">
             <h2 className="label-bold text-primary-fixed uppercase tracking-widest">
-              Your Stats
+              {t("yourStats")}
             </h2>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               <StatsCard
                 icon={<ChartBar size={22} weight="fill" />}
-                label="Global Rank"
+                label={t("globalRank")}
                 value={`#${globalRank}`}
-                subtitle={`of ${totalUsers}`}
+                subtitle={t("ofTotal", { count: totalUsers })}
               />
               <StatsCard
                 icon={<Star size={22} weight="fill" />}
-                label="Total Points"
+                label={t("totalPoints")}
                 value={totalPoints}
-                subtitle="earned"
+                subtitle={t("earned")}
               />
               <StatsCard
                 icon={<Target size={22} weight="fill" />}
-                label="Accuracy"
+                label={t("accuracy")}
                 value={`${accuracy}%`}
-                subtitle={`${correctResults}/${finishedPredictions.length} correct`}
+                subtitle={`${correctResults}/${finishedPredictions.length} ${t("correct")}`}
               />
               <StatsCard
                 icon={<SoccerBall size={22} weight="fill" />}
-                label="Exact Scores"
+                label={t("exactScores")}
                 value={exactScores}
-                subtitle="perfect picks"
+                subtitle={t("perfectPicks")}
               />
             </div>
           </section>
@@ -186,14 +190,14 @@ export default async function ProfilePage() {
         <AnimatedSection delay={0.2}>
           <section className="space-y-3">
             <h2 className="label-bold text-primary-fixed uppercase tracking-widest">
-              Prediction History ({predictions.length})
+              {t("predictionHistory", { count: predictions.length })}
             </h2>
 
             {predictions.length === 0 ? (
               <div className="glass-card p-6 text-center">
                 <SoccerBall size={40} className="text-on-surface-variant mx-auto" />
                 <p className="mt-2 text-on-surface-variant" style={{ fontSize: "var(--text-label-bold)" }}>
-                  No predictions yet. Make your first pick!
+                  {t("noPredictions")}
                 </p>
               </div>
             ) : (
@@ -214,7 +218,7 @@ export default async function ProfilePage() {
                         <span className="text-on-surface font-bold text-xs truncate">
                           {m.homeTeam.code}
                         </span>
-                        <span className="text-on-surface-variant text-xs">vs</span>
+                        <span className="text-on-surface-variant text-xs">{t("vs")}</span>
                         <span className="text-on-surface font-bold text-xs truncate">
                           {m.awayTeam.code}
                         </span>
@@ -268,7 +272,7 @@ export default async function ProfilePage() {
                           className="label-bold text-on-surface-variant shrink-0"
                           style={{ fontSize: "0.6875rem" }}
                         >
-                          PENDING
+                          {t("pending")}
                         </span>
                       )}
                     </div>

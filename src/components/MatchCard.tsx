@@ -1,7 +1,11 @@
+"use client";
+
 import Link from "next/link";
-import { SoccerBall, CheckCircle, XCircle, MinusCircle } from "@phosphor-icons/react/dist/ssr";
+import { SoccerBall, CheckCircle, XCircle, MinusCircle } from "@phosphor-icons/react";
 import { formatMatchDate, formatStageLabel } from "@/lib/format";
 import CountryFlag from "@/components/CountryFlag";
+import { useTranslations, useLocale } from "next-intl";
+import { translateCountry } from "@/lib/countries";
 
 type Team = {
   name: string;
@@ -31,7 +35,7 @@ type Props = {
   pointsLabel?: string | null;
 };
 
-function TeamDisplay({ team }: { team: Team }) {
+function TeamDisplay({ team, locale }: { team: Team; locale: string }) {
   return (
     <div className="flex flex-col items-center gap-2 md:gap-3 flex-1 min-w-0">
       <CountryFlag
@@ -41,9 +45,9 @@ function TeamDisplay({ team }: { team: Team }) {
       <span
         className="text-on-surface text-center leading-tight max-w-[6rem] md:max-w-[10rem] truncate"
         style={{ fontSize: "var(--text-label-bold)", fontWeight: 700 }}
-        title={team.name}
+        title={translateCountry(team.name, locale)}
       >
-        {team.name}
+        {translateCountry(team.name, locale)}
       </span>
     </div>
   );
@@ -65,8 +69,10 @@ export default function MatchCard({
   pointsEarned,
   pointsLabel,
 }: Props) {
+  const t = useTranslations("match");
+  const locale = useLocale();
   const isFinished = status === "FINISHED";
-  const stageLabel = formatStageLabel(stage, group);
+  const stageLabel = formatStageLabel(stage, group, locale);
 
   return (
     <article className="glass-card p-4 md:p-6 flex flex-col gap-3 md:gap-4">
@@ -87,13 +93,13 @@ export default function MatchCard({
           ].join(" ")}
           style={{ fontSize: "0.6875rem" }}
         >
-          {isFinished ? "FINISHED" : status}
+          {isFinished ? t("finished") : t("scheduled")}
         </span>
       </div>
 
       {/* Teams row */}
       <div className="flex items-center gap-2 md:gap-6 lg:gap-10 md:py-4">
-        <TeamDisplay team={homeTeam} />
+        <TeamDisplay team={homeTeam} locale={locale} />
 
         {/* VS / Score / Prediction center */}
         <div className="flex flex-col items-center shrink-0 gap-1 px-2 md:px-6">
@@ -110,7 +116,7 @@ export default function MatchCard({
               </span>
               {penaltyWinner && (
                 <span className="label-bold text-gold" style={{ fontSize: "0.6875rem" }}>
-                  pen.
+                  {t("pen")}
                 </span>
               )}
               {prediction && (
@@ -118,9 +124,9 @@ export default function MatchCard({
                   className="label-bold text-on-surface-variant tabular-nums"
                   style={{ fontSize: "0.6875rem" }}
                 >
-                  My pick: {prediction.homeScore} – {prediction.awayScore}
+                  {t("myPick")}: {prediction.homeScore} – {prediction.awayScore}
                   {prediction.penaltyWinner && (
-                    <span className="text-gold"> (pen.)</span>
+                    <span className="text-gold"> ({t("pen")})</span>
                   )}
                 </span>
               )}
@@ -140,7 +146,7 @@ export default function MatchCard({
                 className="label-bold text-on-surface-variant uppercase tracking-widest"
                 style={{ fontSize: "0.6875rem" }}
               >
-                My pick
+                {t("myPick")}
               </span>
             </div>
           ) : (
@@ -156,15 +162,16 @@ export default function MatchCard({
           )}
         </div>
 
-        <TeamDisplay team={awayTeam} />
+        <TeamDisplay team={awayTeam} locale={locale} />
       </div>
 
       {/* Date */}
       <p
         className="text-on-surface-variant text-center"
         style={{ fontSize: "var(--text-label-bold)", lineHeight: "var(--text-label-bold--line-height)" }}
+        suppressHydrationWarning
       >
-        {formatMatchDate(matchDate)}
+        {formatMatchDate(matchDate, "short", locale)}
       </p>
 
       {/* Points result (finished matches with pointsEarned prop) */}
@@ -205,14 +212,14 @@ export default function MatchCard({
               fontSize: "var(--text-label-bold)",
             }}
           >
-            +{pointsEarned} pts
+            {t("ptsEarned", { points: pointsEarned })}
           </span>
         </div>
       )}
       {isFinished && pointsEarned != null && !prediction && (
         <div className="flex items-center gap-2 rounded-xl px-4 py-2.5" style={{ background: "var(--color-surface-container-high)" }}>
           <MinusCircle size={16} className="text-on-surface-variant shrink-0" />
-          <span className="text-on-surface-variant" style={{ fontSize: "0.6875rem" }}>No prediction — Missed</span>
+          <span className="text-on-surface-variant" style={{ fontSize: "0.6875rem" }}>{t("missed")}</span>
           <span
             className="ml-auto label-bold px-3 py-1 rounded-full shrink-0"
             style={{
@@ -221,7 +228,7 @@ export default function MatchCard({
               fontSize: "var(--text-label-bold)",
             }}
           >
-            0 pts
+            {t("zeroPts")}
           </span>
         </div>
       )}
@@ -237,7 +244,7 @@ export default function MatchCard({
           }}
         >
           <SoccerBall size={18} weight="fill" />
-          MAKE YOUR PICK
+          {t("makeYourPick")}
         </Link>
       )}
     </article>

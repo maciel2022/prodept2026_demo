@@ -2,6 +2,8 @@
 
 import { useActionState, useState } from "react";
 import { useFormStatus } from "react-dom";
+import { useTranslations, useLocale } from "next-intl";
+import { translateCountry } from "@/lib/countries";
 import { Trophy } from "@phosphor-icons/react/dist/ssr";
 import { savePrediction } from "./actions";
 import CountryFlag from "@/components/CountryFlag";
@@ -21,7 +23,7 @@ type Props = {
   initialPenaltyWinner?: string | null;
 };
 
-function TeamFlag({ team }: { team: Team }) {
+function TeamFlag({ team, locale }: { team: Team; locale: string }) {
   return (
     <div className="flex flex-col items-center gap-2 md:gap-3">
       <CountryFlag
@@ -32,7 +34,7 @@ function TeamFlag({ team }: { team: Team }) {
         className="font-display text-on-surface text-center leading-tight max-w-[5rem] md:max-w-[7rem] text-sm md:text-[2rem]"
         style={{ lineHeight: 1.1 }}
       >
-        {team.name}
+        {translateCountry(team.name, locale)}
       </span>
     </div>
   );
@@ -40,6 +42,7 @@ function TeamFlag({ team }: { team: Team }) {
 
 function SubmitButton() {
   const { pending } = useFormStatus();
+  const t = useTranslations("predictionDetail");
 
   return (
     <button
@@ -48,7 +51,7 @@ function SubmitButton() {
       className="w-full font-display text-label-bold py-4 rounded-xl uppercase tracking-widest transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-60 text-white"
       style={{ background: "linear-gradient(135deg, var(--color-primary-fixed) 0%, var(--color-primary-fixed-dim) 100%)", color: "#003d2e" }}
     >
-      {pending ? "LOCKING IN..." : "LOCK IT IN"}
+      {pending ? t("lockingIn") : t("lockItIn")}
     </button>
   );
 }
@@ -64,6 +67,8 @@ export default function PredictionForm({
   initialAwayScore,
   initialPenaltyWinner,
 }: Props) {
+  const t = useTranslations("predictionDetail");
+  const locale = useLocale();
   const [state, formAction] = useActionState(savePrediction, initialState);
   const [homeScore, setHomeScore] = useState(initialHomeScore?.toString() ?? "");
   const [awayScore, setAwayScore] = useState(initialAwayScore?.toString() ?? "");
@@ -82,7 +87,7 @@ export default function PredictionForm({
       <div className="flex items-center gap-2 md:gap-4">
         {/* Home team */}
         <div className="flex-1 flex flex-col items-center gap-3 md:gap-4">
-          <TeamFlag team={homeTeam} />
+          <TeamFlag team={homeTeam} locale={locale} />
           <input
             type="number"
             name="homeScore"
@@ -97,7 +102,7 @@ export default function PredictionForm({
             placeholder="0"
             className="bg-surface-container-high border border-outline-variant rounded-xl text-center font-display text-on-surface w-16 h-16 md:w-20 md:h-20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             style={{ fontSize: "var(--text-headline-md)" }}
-            aria-label={`Goals ${homeTeam.name}`}
+            aria-label={t("goalsAria", { team: homeTeam.name })}
           />
         </div>
 
@@ -107,13 +112,13 @@ export default function PredictionForm({
             className="font-display text-on-surface-variant text-xl md:text-[2rem]"
             style={{ lineHeight: 1 }}
           >
-            VS
+            {t("vs")}
           </span>
         </div>
 
         {/* Away team */}
         <div className="flex-1 flex flex-col items-center gap-3 md:gap-4">
-          <TeamFlag team={awayTeam} />
+          <TeamFlag team={awayTeam} locale={locale} />
           <input
             type="number"
             name="awayScore"
@@ -128,7 +133,7 @@ export default function PredictionForm({
             placeholder="0"
             className="bg-surface-container-high border border-outline-variant rounded-xl text-center font-display text-on-surface w-16 h-16 md:w-20 md:h-20 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             style={{ fontSize: "var(--text-headline-md)" }}
-            aria-label={`Goals ${awayTeam.name}`}
+            aria-label={t("goalsAria", { team: awayTeam.name })}
           />
         </div>
       </div>
@@ -139,7 +144,7 @@ export default function PredictionForm({
           <div className="flex items-center justify-center gap-2">
             <Trophy size={16} weight="fill" className="text-gold" />
             <p className="label-bold text-on-surface-variant tracking-widest text-center text-xs">
-              WHO WINS ON PENALTIES?
+              {t("penaltyQuestion")}
             </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -164,7 +169,7 @@ export default function PredictionForm({
                   fontSize: "var(--text-body-md)",
                 }}
               >
-                {homeTeam.name}
+                {translateCountry(homeTeam.name, locale)}
               </span>
             </button>
             <button
@@ -188,7 +193,7 @@ export default function PredictionForm({
                   fontSize: "var(--text-body-md)",
                 }}
               >
-                {awayTeam.name}
+                {translateCountry(awayTeam.name, locale)}
               </span>
             </button>
           </div>

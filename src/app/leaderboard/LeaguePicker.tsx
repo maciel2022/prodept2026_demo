@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 type League = {
   id: string;
@@ -8,6 +9,7 @@ type League = {
 };
 
 export default function LeaguePicker({ leagues }: { leagues: League[] }) {
+  const t = useTranslations("leaderboard");
   const router = useRouter();
   const searchParams = useSearchParams();
   const activeLeague = searchParams.get("league") ?? "";
@@ -20,7 +22,7 @@ export default function LeaguePicker({ leagues }: { leagues: League[] }) {
     }
   }
 
-  const items = [{ id: "", name: "Global" }, ...leagues];
+  const items = [{ id: "", name: t("global") }, ...leagues];
 
   return (
     <div className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1" style={{ WebkitOverflowScrolling: "touch" }}>

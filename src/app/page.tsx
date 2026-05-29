@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { ChartBar, Star, UsersThree, CaretRight, SoccerBall } from "@phosphor-icons/react/dist/ssr";
+import { getTranslations } from "next-intl/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -79,6 +80,8 @@ export default async function HomePage() {
   });
   const globalRank = usersAhead.length + 1;
 
+  const t = await getTranslations("home");
+
   // ── 4. Render ──────────────────────────────────────────────────────────────
   return (
     <>
@@ -103,16 +106,16 @@ export default async function HomePage() {
             <div className="flex items-center justify-between gap-3">
               <div className="space-y-1 md:space-y-2 min-w-0">
                 <p className="label-bold text-primary-fixed tracking-widest">
-                  FIFA WORLD CUP 2026
+                  {t("topLabel")}
                 </p>
                 <h1
                   className="font-display text-on-surface leading-none text-[3rem] md:text-[4rem] lg:text-[5rem]"
                 >
-                  MY{" "}
-                  <span style={{ color: "var(--color-primary-fixed)" }}>PRODE</span>
+                  {t("title")}{" "}
+                  <span style={{ color: "var(--color-primary-fixed)" }}>{t("titleHighlight")}</span>
                 </h1>
                 <p className="text-on-surface-variant text-sm md:text-base">
-                  Welcome, {user.name.split(" ")[0]}
+                  {t("welcome", { name: user.name.split(" ")[0] })}
                 </p>
               </div>
 
@@ -132,7 +135,7 @@ export default async function HomePage() {
         <section className="space-y-3">
           <div className="flex items-center justify-between">
             <h2 className="label-bold text-primary-fixed uppercase tracking-widest">
-              Your Next Big Call
+              {t("nextBigCall")}
             </h2>
             <ScoringRulesModal />
           </div>
@@ -165,7 +168,7 @@ export default async function HomePage() {
                 className="mt-2 text-on-surface-variant"
                 style={{ fontSize: "var(--text-label-bold)" }}
               >
-                No upcoming matches scheduled.
+                {t("noMatches")}
               </p>
             </div>
           )}
@@ -176,22 +179,22 @@ export default async function HomePage() {
         <AnimatedSection delay={0.3}>
         <section className="space-y-3">
           <h2 className="label-bold text-primary-fixed uppercase tracking-widest">
-            Your Summary
+            {t("yourSummary")}
           </h2>
 
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
             <StatsCard
               icon={<ChartBar size={22} weight="fill" />}
-              label="Global Rank"
+              label={t("globalRank")}
               value={`#${globalRank}`}
-              subtitle={`${predictionsAggregate} predictions`}
+              subtitle={`${predictionsAggregate} ${t("predictions")}`}
             />
 
             <StatsCard
               icon={<Star size={22} weight="fill" />}
-              label="Total Points"
+              label={t("totalPoints")}
               value={totalPoints}
-              subtitle="earned"
+              subtitle={t("earned")}
             />
 
             {/* Private Leagues */}
@@ -212,7 +215,7 @@ export default async function HomePage() {
                   className="label-bold text-on-surface-variant tracking-widest"
                   style={{ fontSize: "var(--text-label-bold)" }}
                 >
-                  Private Leagues
+                  {t("privateLeagues")}
                 </p>
                 <p
                   className="font-display text-on-surface mt-0.5 leading-tight"
@@ -229,7 +232,7 @@ export default async function HomePage() {
                       fontWeight: 400,
                     }}
                   >
-                    {leagueCount === 1 ? "league" : "leagues"}
+                    {leagueCount === 1 ? t("league") : t("leagues")}
                   </span>
                 </p>
               </div>

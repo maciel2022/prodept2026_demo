@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import { SoccerBall } from "@phosphor-icons/react/dist/ssr";
+import { getTranslations } from "next-intl/server";
 
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,17 +13,6 @@ import ScoringRulesModal from "@/components/ScoringRulesModal";
 import PredictionTabs from "./PredictionTabs";
 
 export const metadata = { title: "Predictions — PRODEPT 2026" };
-
-function getPointsLabel(points: number): string {
-  if (points === 7) return "Exact + winner bonus";
-  if (points === 6) return "Result + diff + winner";
-  if (points === 5) return "Exact score / Result + winner";
-  if (points === 4) return "Result + difference";
-  if (points === 3) return "Correct result";
-  if (points === 2) return "Winner bonus";
-  if (points === 1) return "Correct difference";
-  return "Wrong";
-}
 
 export default async function PredictionsPage() {
   // ── 1. Auth guard ──────────────────────────────────────────────────────────
@@ -70,6 +60,19 @@ export default async function PredictionsPage() {
 
   if (!user) redirect("/login");
 
+  const t = await getTranslations("predictions");
+
+  function getPointsLabel(points: number): string {
+    if (points === 7) return t("exactWinner");
+    if (points === 6) return t("resultDiffWinner");
+    if (points === 5) return t("exactOrResultWinner");
+    if (points === 4) return t("resultDiff");
+    if (points === 3) return t("correctResult");
+    if (points === 2) return t("winnerBonus");
+    if (points === 1) return t("correctDiff");
+    return t("wrong");
+  }
+
   const predictionMap = new Map(
     userPredictions.map((p) => [p.matchId, p])
   );
@@ -84,7 +87,7 @@ export default async function PredictionsPage() {
             className="mt-2 text-on-surface-variant"
             style={{ fontSize: "var(--text-label-bold)" }}
           >
-            No upcoming matches scheduled.
+            {t("noUpcoming")}
           </p>
         </div>
       ) : (
@@ -123,7 +126,7 @@ export default async function PredictionsPage() {
             className="text-on-surface-variant"
             style={{ fontSize: "var(--text-label-bold)" }}
           >
-            No finished matches yet.
+            {t("noFinished")}
           </p>
         </div>
       ) : (
@@ -177,16 +180,16 @@ export default async function PredictionsPage() {
           <section className="pt-6 md:pt-10 pb-2 flex items-center justify-between gap-3">
             <div className="space-y-1 md:space-y-2 min-w-0">
               <p className="label-bold text-primary-fixed tracking-widest">
-                FIFA WORLD CUP 2026
+                {t("topLabel")}
               </p>
               <h1
                 className="font-display text-on-surface leading-none text-[3rem] md:text-[4rem] lg:text-[5rem]"
               >
-                PREDIC
-                <span style={{ color: "var(--color-primary-fixed)" }}>TIONS</span>
+                {t("title")}
+                <span style={{ color: "var(--color-primary-fixed)" }}>{t("titleHighlight")}</span>
               </h1>
               <p className="text-on-surface-variant text-sm md:text-base">
-                Your next big call awaits
+                {t("subtitle")}
               </p>
             </div>
             <Image
